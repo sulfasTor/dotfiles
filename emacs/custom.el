@@ -5,7 +5,7 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
- '(auth-sources '("~/.authinfo"))
+ '(auth-sources '("~/.authinfo.gpg"))
  '(auto-compile-on-save-mode t)
  '(column-number-mode t)
  '(company-dabbrev-downcase 0)
