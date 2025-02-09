@@ -41,7 +41,7 @@
   (kill-line)
   (yank)
   (open-line 1)
-  (next-line 1)
+  (forward-line 1)
   (yank))
 (global-set-key (kbd "\C-cd") 'duplicate-line)
 
@@ -170,22 +170,12 @@
 (use-package gruber-darker-mode
   :ensure t)
 
-;; Sky Color Clock
-(use-package sky-color-clock
-  :config
-  (sky-color-clock-initialize 35)
-  (setq sky-color-clock-format "%H:%M")
-  (push '(:eval (sky-color-clock)) (default-value 'mode-line-format)))
-
-;; Transparent Frame Toggle
-(defun toggle-transparency ()
-  (interactive)
-  (let ((alpha (frame-parameter nil 'alpha)))
-    (set-frame-parameter nil 'alpha
-                         (if (or (not alpha) (= (cadr alpha) 100))
-                             '(85 . 50)
-                           '(100 . 100)))))
-(global-set-key (kbd "C-c t") 'toggle-transparency)
+;; ;; Sky Color Clock
+;; (use-package sky-color-clock
+;;   :config
+;;   (sky-color-clock-initialize 35)
+;;   (setq sky-color-clock-format "%H:%M")
+;;   (push '(:eval (sky-color-clock)) (default-value 'mode-line-format)))
 
 ;; Backup Configuration
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups"))
@@ -202,16 +192,14 @@
 
 ;; Custom Keybindings
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
-(global-set-key (kbd "M-p") #'jump-to-next-same-indent)
+;;(global-set-key (kbd "M-p") #'jump-to-next-same-indent)
 
 ;; Enable Auto-save for Org-mode buffers
 (add-hook 'auto-save-hook 'org-save-all-org-buffers)
 
-;; Removes *messages* from the buffer.
 (setq-default message-log-max nil)
 (kill-buffer "*Messages*")
 
-;; Removes *Completions* from buffer after you've opened a file.
 (add-hook 'minibuffer-exit-hook
 	  '(lambda ()
              (let ((buffer "*Completions*"))
@@ -256,6 +244,7 @@
 (global-set-key (kbd "C-.") 'pop-global-mark)
 
 ;; Shorcuts
+(require 'lsp)
 (global-set-key (kbd "C-<f5>") #'lsp-find-references)
 (global-set-key (kbd "C-<f6>") #'lsp-find-implementation)
 (global-set-key (kbd "<f7>") #'projectile-compile-project)
@@ -265,3 +254,6 @@
 
 
 (exec-path-from-shell-initialize)
+
+(provide 'init)
+;;; init.el ends here
