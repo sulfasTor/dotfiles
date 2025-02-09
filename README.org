@@ -1,0 +1,8 @@
+#+TITLE: dotfiles
+
+* Emacs
+** init.el
+Personal emacs init
+
+** custom.el
+You can ignore this
