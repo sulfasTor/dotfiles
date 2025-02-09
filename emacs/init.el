@@ -266,5 +266,4 @@
 (global-set-key (kbd "<f5>") #'deadgrep)
 (global-set-key (kbd "<f6>") #'swiper)
 
-
 (exec-path-from-shell-initialize)
