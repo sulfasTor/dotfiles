@@ -272,57 +272,43 @@
 (global-set-key (kbd "<f6>") #'swiper)
 
 (defun org-agenda-note ()
-  "Open or create a note for the current Org agenda task.
-If a note already exists, open it immediately. Otherwise, prompt for a filename,
-create the note, fill it with a template, and turn the task title into a clickable link."
+  "Create a new note for the current Org agenda task and link it in the task title."
   (interactive)
-  (unless (org-agenda-check-type nil 'agenda)
-    (user-error "This command must be run from an agenda view"))
+  (unless (derived-mode-p 'org-agenda-mode)
+    (user-error "This command must be run from an Org agenda buffer"))
 
   (let* ((marker (or (org-get-at-bol 'org-hd-marker)
                      (org-get-at-bol 'org-marker)))
-         (task-buffer (when marker (marker-buffer marker)))
-         (task-pos (when marker (marker-position marker)))
-         (task-title (when task-buffer
-                       (with-current-buffer task-buffer
-                         (goto-char task-pos)
-                         (org-get-heading t t))))
-         (default-filename (concat (replace-regexp-in-string "[^a-zA-Z0-9_-]" "_" task-title) ".org"))
-         (default-path (expand-file-name default-filename "~/Documents/notes/"))
-         (existing-note (when task-buffer
-                          (with-current-buffer task-buffer
-                            (goto-char task-pos)
-                            (when (re-search-forward "\\[\\[file:\\([^]]+\\)\\]\\[" nil t)
-                              (match-string 1)))))
-         (note-path (if existing-note
-                        existing-note
-                      (read-file-name "Note file: " "~/Documents/notes/" nil nil default-filename)))
+         (task-buffer (marker-buffer marker))
+         (task-pos (marker-position marker))
+         (task-title (with-current-buffer task-buffer
+                       (goto-char task-pos)
+                       (org-get-heading t t)))
+         (filename (concat (replace-regexp-in-string "[^a-zA-Z0-9_-]" "_" task-title) ".org"))
+         (note-path (expand-file-name filename "~/Documents/notes/"))
          (note-link (format "[[file:%s][%s]]" note-path task-title)))
 
     (unless task-title
       (user-error "No task found at point"))
 
-    ;; If the note already exists, open it immediately
-    (if (file-exists-p note-path)
-        (find-file note-path)
-      ;; Otherwise, create the note with a template
-      (with-current-buffer (find-file-noselect note-path)
-        (insert "#+TITLE: " task-title "\n"
-                "#+DATE: " (format-time-string "[%Y-%m-%d %a]") "\n"
-                "* Task: " task-title "\n"
-                "** Context\n\n"
-                "** Implementation\n\n"
-                "** Testing\n\n"
-                "** Caveats\n\n")
-        (save-buffer))
+    ;; Create a new note file
+    (with-current-buffer (find-file-noselect note-path)
+      (insert "#+TITLE: " task-title "\n"
+              "#+DATE: " (format-time-string "[%Y-%m-%d %a]") "\n"
+              "* Task: " task-title "\n"
+              "** Context\n\n"
+              "** Implementation\n\n"
+              "** Testing\n\n"
+              "** Caveats\n\n")
+      (save-buffer))
 
-      ;; Turn the task title into a link to the note
-      (with-current-buffer task-buffer
-        (goto-char task-pos)
-        (beginning-of-line)
-        (re-search-forward (regexp-quote task-title) (line-end-position) t)
-        (replace-match note-link t t)
-        (save-buffer)))
+    ;; Update the task title in Org Agenda to be a link
+    (with-current-buffer task-buffer
+      (goto-char task-pos)
+      (beginning-of-line)
+      (when (re-search-forward (regexp-quote task-title) (line-end-position) t)
+        (replace-match note-link t t))
+      (save-buffer))
 
     ;; Open the note
     (find-file note-path)
@@ -331,8 +317,6 @@ create the note, fill it with a template, and turn the task title into a clickab
 ;; Bind to "C-c n" inside org-agenda
 (with-eval-after-load 'org-agenda
   (define-key org-agenda-mode-map (kbd "C-c n") 'org-agenda-note))
-
-
 
 (defun assoc-pr-to-note ()
   "Associate the current Magit Forge PR or commit with an existing TODO note.
