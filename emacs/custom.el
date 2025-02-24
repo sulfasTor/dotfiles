@@ -41,8 +41,8 @@
  '(display-line-numbers-width-start t)
  '(docker-command "docker")
  '(elfeed-feeds
-   '("http://science.sciencemag.org/rss/current.xml" "http://rss.cnn.com/rss/edition.rss" "https://news.ycombinator.com/rss"
-     ("https://news.ycombinator.com/rss" HN)) t)
+   '("https://sulfastor.github.io/feed.xml" "http://science.sciencemag.org/rss/current.xml" "http://rss.cnn.com/rss/edition.rss" "https://news.ycombinator.com/rss"
+     ("https://news.ycombinator.com/rss" HN)))
  '(elgantt-header-type 'category)
  '(elpy-mode-hook
    '(highlight-indent-guides-mode diff-hl-mode smartparens-mode))
@@ -162,6 +162,12 @@
        (mode . gnus-group-mode)
        (mode . gnus-summary-mode)
        (mode . gnus-article-mode)))))
+ '(ignored-local-variable-values
+   '((vc-default-patch-addressee . "bug-gnu-emacs@gnu.org")
+     (etags-regen-ignores "test/manual/etags/")
+     (etags-regen-regexp-alist
+      (("c" "objc")
+       "/[ \11]*DEFVAR_[A-Z_ \11(]+\"\\([^\"]+\\)\"/\\1/" "/[ \11]*DEFVAR_[A-Z_ \11(]+\"[^\"]+\",[ \11]\\([A-Za-z0-9_]+\\)/\\1/"))))
  '(image-use-external-converter nil)
  '(imenu-list-idle-update-delay 0.2)
  '(imenu-list-minor-mode nil)
@@ -175,6 +181,7 @@
  '(ispell-dictionary "english")
  '(logview-guess-lines 100)
  '(logview-max-promising-lines 2)
+ '(lsp-copilot-enabled nil)
  '(lsp-enable-file-watchers nil)
  '(lsp-go-gopls-server-path "/home/moises/go/bin/gopls")
  '(lsp-http-proxyStrictSSL t)
@@ -193,6 +200,7 @@
  '(magit-pull-or-fetch nil)
  '(message-log-max 1000)
  '(mode-require-final-newline nil)
+ '(native-comp-always-compile t)
  '(neo-click-changes-root t)
  '(neo-window-fixed-size nil)
  '(neo-window-width 14)
