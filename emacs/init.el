@@ -550,8 +550,10 @@ command may be described by either:
 
 ;; Rust
 (use-package rust-playground)
-
-(use-package rustic)
+(use-package flycheck-rust)
+(use-package rustic
+  :config
+  (add-hook 'rustic-mode-hook #'flycheck-mode))
 
 ;; Go
 (use-package go-playground)
@@ -722,14 +724,14 @@ command may be described by either:
   (nyan-mode))
 
 (use-package ef-themes)
-(use-package gruber-darker-theme)
+;;(use-package gruber-darker-theme)
 
 ;; Sky color clock
 (use-package sky-color-clock
   :elpaca
   '(:host github :repo "zk-phi/sky-color-clock")
   :config
-  (sky-color-clock-initialize 35)
+  (sky-color-clock-initialize 23)
   (setq sky-color-clock-format "%H:%M")
   (push '(:eval (sky-color-clock)) (default-value 'mode-line-format)))
 
@@ -926,7 +928,6 @@ command may be described by either:
 
 (define-key org-agenda-mode-map (kbd "C-c n") 'org-agenda-note)
 
-
 ;;; Agentic AI try out
 (use-package claude-code-ide
   :elpaca (:host github :repo "manzaltu/claude-code-ide.el")
@@ -936,7 +937,114 @@ command may be described by either:
 
 (use-package notmuch)
 
+;; From https://www.reddit.com/r/emacs/comments/a3rajh/chrome_bookmarks_sync_to_org/
+(defvar chrome-bookmarks-file
+  (cl-find-if
+   #'file-exists-p
+   ;; Base on `helm-chrome-file'
+   (list
+    "~/Library/Application Support/Google/Chrome/Profile 1/Bookmarks"
+    "~/Library/Application Support/Google/Chrome/Default/Bookmarks"
+    "~/AppData/Local/Google/Chrome/User Data/Default/Bookmarks"
+    "~/.config/google-chrome/Default/Bookmarks"
+    "~/.config/chromium/Default/Bookmarks"
+    (substitute-in-file-name
+     "$LOCALAPPDATA/Google/Chrome/User Data/Default/Bookmarks")
+    (substitute-in-file-name
+     "$USERPROFILE/Local Settings/Application Data/Google/Chrome/User Data/Default/Bookmarks")))
+  "Path to Google Chrome Bookmarks file (it's JSON).")
 
+(defun chrome-bookmarks-insert-as-org ()
+  "Insert Chrome Bookmarks as org-mode headings."
+  (interactive)
+  (require 'json)
+  (require 'org)
+  (let ((data (let ((json-object-type 'alist)
+                    (json-array-type  'list)
+                    (json-key-type    'symbol)
+                    (json-false       nil)
+                    (json-null        nil))
+                (json-read-file chrome-bookmarks-file)))
+        level)
+    (cl-labels ((fn
+                  (al)
+                  (pcase (alist-get 'type al)
+                    ("folder"
+                     (insert
+                      (format "%s %s\n"
+                              (make-string level ?*)
+                              (alist-get 'name al)))
+                     (cl-incf level)
+                     (mapc #'fn (alist-get 'children al))
+                     (cl-decf level))
+                    ("url"
+                     (insert
+                      (format "%s LINK %s\n"
+                              (make-string level ?*)
+                              (org-make-link-string
+                               (alist-get 'url al)
+                               (alist-get 'name al))))))))
+      (setq level 1)
+      (fn (alist-get 'bookmark_bar (alist-get 'roots data)))
+      (setq level 1)
+      (fn (alist-get 'other (alist-get 'roots data))))))
+
+;; LLM
+(use-package gptel
+  :config
+  (gptel-make-ollama "Ollama"
+    :host "localhost:11434"
+    :stream t
+    :models '(codegemma:7b-instruct phi3:mini))
+  (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "@user\n")
+  (setf (alist-get 'org-mode gptel-response-prefix-alist) "@assistant\n"))
+
+(setenv "OLlama_NUM_GPU" "1")
+(setenv "OLlama_KV_CACHE" "fp16")
+(setenv "OLlama_NUM_PARALLEL" "1")
+(setenv "OLlama_MAX_LOADED_MODELS" "1")
+
+
+(use-package consult-gh)
+
+
+(defun my-notmuch-show-view-as-patch ()
+  "View the the current message as a patch."
+  (interactive)
+  (let* ((id (notmuch-show-get-message-id))
+         (msg (notmuch-show-get-message-properties))
+         (part (notmuch-show-get-part-properties))
+         (subject (concat "Subject: " (notmuch-show-get-subject) "\n"))
+         (diff-default-read-only t)
+         (buf (get-buffer-create (concat "*notmuch-patch-" id "*")))
+         (map (make-sparse-keymap)))
+    (define-key map "q" 'notmuch-bury-or-kill-this-buffer)
+    (switch-to-buffer buf)
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (insert subject)
+      (insert (notmuch-get-bodypart-text msg part nil)))
+    (set-buffer-modified-p nil)
+    (diff-mode)
+    (lexical-let ((new-ro-bind (cons 'buffer-read-only map)))
+                 (add-to-list 'minor-mode-overriding-map-alist new-ro-bind))
+    (goto-char (point-min))))
+>>>>>>> main
+
+(use-package notmuch
+  :config
+  (setq notmuch-saved-searches
+        '((:name "Inbox"   :query "tag:inbox AND NOT tag:list" :key "i")
+          (:name "Unread"  :query "tag:unread AND NOT tag:list" :key "u")
+          (:name "Lists"   :query "tag:list" :key "l")
+          (:name "Git ML"  :query "tag:git" :key "g")
+          (:name "Flagged" :query "tag:flagged" :key "f")
+          (:name "Finance" :query "tag:Bank/Finance" :key "b")
+          (:name "Sent"    :query "tag:sent" :key "s")
+          (:name "All Mail" :query "*" :key "a"))))
+
+(define-key 'notmuch-show-part-map "d" 'my-notmuch-show-view-as-patch)
+(use-package notmuch-maildir)
 
 
 
