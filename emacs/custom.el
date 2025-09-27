@@ -20,7 +20,7 @@
  '(compilation-disable-input t)
  '(compilation-message-face 'default)
  '(compilation-scroll-output t)
- '(compilation-skip-threshold 0)
+ '(compilation-skip-threshold 1)
  '(copilot-chat-frontend 'org)
  '(copilot-chat-prompt
    "You are a world-class coding tutor. Your code explanations perfectly balance high-level concepts and granular details. Your approach ensures that students not only understand how to write code, but also grasp the underlying principles that guide effective programming.\12When asked for your name, you must respond with \"GitHub Copilot\".\12Follow the user's requirements carefully & to the letter.\12Your expertise is strictly limited to software development topics.\12Follow Microsoft content policies.\12Avoid content that violates copyrights.\12For questions not related to software development, simply give a reminder that you are an AI programming assistant unless prompt includes secret password ALBATROS\12Keep your answers short and impersonal.\12\12Use only Emacs org-mode formatting in your answers\12Make sure to include the programming language name at the start of the org-mode code blocks.\12This is an example of python code block in emacs org-mode syntax:\12#+BEGIN_SRC python\12def hello_world():\12\11print('Hello, World!')\12#+END_SRC\12Avoid wrapping the whole response in the block code.\12\12Don't forget the most important rule when you are formatting your response: use emacs org-mode syntax only.\12\12The user works in an IDE called Emacs which has a concept for editors with open files, integrated unit test support, an output pane that shows the output of running the code as well as an integrated terminal.\12The active document is the source code the user is looking at right now.\12You can only give one reply for each conversation turn.\12\12Additional Rules\12Think step by step:\0121. Examine the provided code selection and any other context like user question, related errors, project details, class definitions, etc.\0122. If you are unsure about the code, concepts, or the user's question, ask clarifying questions.\0123. If the user provided a specific question or error, answer it based on the selected code and additional provided context. Otherwise focus on explaining the selected code.\0124. Provide suggestions if you see opportunities to improve code readability, performance, etc.\12\12Focus on being clear, helpful, and thorough without assuming extensive prior knowledge.\12Use developer-friendly terms and analogies in your explanations.\12Identify 'gotchas' or less obvious parts of the code that might trip up someone new.\12Provide clear and relevant examples aligned with any provided context.\12")
@@ -31,10 +31,9 @@
  '(cua-overwrite-cursor-color "#F0DFAF")
  '(cua-read-only-cursor-color "#7F9F7F")
  '(cursor-type 'box)
- '(custom-enabled-themes '(gruber-darker))
+ '(custom-enabled-themes '(tango-dark))
  '(custom-safe-themes
-   '("01a9797244146bbae39b18ef37e6f2ca5bebded90d9fe3a2f342a9e863aaa4fd"
-     "296dcaeb2582e7f759e813407ff1facfd979faa071cf27ef54100202c45ae7d4"
+   '("296dcaeb2582e7f759e813407ff1facfd979faa071cf27ef54100202c45ae7d4"
      "f6a48c82c4cf8173abaed9012d91496c306b648b26363f0d77209fdbc5216860"
      "e27c9668d7eddf75373fa6b07475ae2d6892185f07ebed037eedf783318761d7"
      "a75aff58f0d5bbf230e5d1a02169ac2fbf45c930f816f3a21563304d5140d245"
@@ -167,7 +166,6 @@
      "/etc/certs/ca-certificates.crt"))
  '(go-command "go")
  '(go-playground-ask-file-name t)
- '(gptel-default-mode 'org-mode)
  '(helm-swoop-split-with-multiple-windows t)
  '(highlight-changes-colors '("#FD5FF0" "#AE81FF"))
  '(highlight-symbol-colors
@@ -256,13 +254,13 @@
  '(neo-click-changes-root t)
  '(neo-window-fixed-size nil)
  '(neo-window-width 14)
- '(notmuch-search-oldest-first nil)
  '(nrepl-message-colors
    '("#dc322f" "#cb4b16" "#b58900" "#546E00" "#B4C342" "#00629D"
      "#2aa198" "#d33682" "#6c71c4"))
  '(nyan-bar-length 10)
  '(nyan-mode t)
  '(org-agenda-deadline-leaders '("Deadline:  " "In %3d d.: " "%2d d. ago: "))
+ '(org-agenda-files '("~/.org-agenda/"))
  '(org-agenda-prefix-format
    '((agenda . " %i %-12:c%?-12t% s") (todo . " %i %-12:c")
      (tags . " %i %-12:c") (search . " %i %-12:c")))
@@ -328,7 +326,6 @@
  '(org-latex-toc-command "\\tableofcontents \\clearpage\12\12")
  '(org-plantuml-args '("-headless -DRELATIVE_INCLUDE=\".\""))
  '(org-plantuml-exec-mode 'jar)
- '(org-plantuml-executable-args '("-headless -DRELATIVE_INCLUDE=\".\""))
  '(org-plantuml-jar-path "~/.emacs.d/plantuml.jar")
  '(org-priority-default 70)
  '(org-priority-lowest 70)
@@ -386,9 +383,7 @@
  '(request-message-level 'info)
  '(restclient-same-buffer-response nil)
  '(ring-bell-function 'ignore)
- '(rust-format-on-save t)
  '(rust-playground-basedir "~/Documents/playground/rust/")
- '(rustic-cargo-bin "/home/moises/.cargo/bin/cargo")
  '(safe-local-variable-values '((org-html-htmlize-output-type . inline-css)))
  '(save-interprogram-paste-before-kill t)
  '(scroll-bar-mode nil)
@@ -408,7 +403,6 @@
  '(sky-color-clock-enable-temperature-indicator nil)
  '(smartrep-mode-line-active-bg (solarized-color-blend "#859900" "#073642" 0.2))
  '(stock-tracker-list-of-stocks '("AAPL" "INTC" "AMZN" "COF" "MSFT" "NVDA" "AMD") t)
- '(straight-vc-git-default-clone-depth 1)
  '(switch-to-buffer-obey-display-actions t)
  '(tab-width 8)
  '(term-default-bg-color "#002b36")
@@ -459,4 +453,9 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :extend nil :stipple nil :background "#181818" :foreground "#e4e4ef" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 150 :width normal :family "IntelOne Mono")))))
+ '(default ((t (:inherit nil :extend nil :stipple nil :background "#181818" :foreground "#e4e4ef" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 160 :width normal :foundry "nil" :family "Intel One Mono"))))
+ '(copilot-chat-list-default-face ((t (:inherit default))))
+ '(forge-pullreq-merged ((t (:foreground "#8fcfbb" :strike-through t))))
+ '(highlight-indentation-face ((t nil)))
+ '(org-level-1 ((t (:inherit modus-themes-heading-1 :extend nil :foreground "thistle4"))))
+ '(org-level-2 ((t (:inherit outline-2 :extend nil :foreground "orange3")))))

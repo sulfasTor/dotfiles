@@ -27,7 +27,7 @@
 
 ;; don't let Customize mess with my .emacs
 (setq custom-file (concat user-emacs-directory "custom.el"))
-(load custom-file 'noerror)
+(add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
 
 ;; Keep it clean
 (defun my-enable-trailing-whitespace ()
@@ -57,23 +57,54 @@
 
 ;; Package definitions
 
-(defvar bootstrap-version)
-(defvar comp-deferred-compilation-deny-list ()) ; workaround, otherwise straight shits itself
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+(defvar elpaca-installer-version 0.11)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1 :inherit ignore
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (<= emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
 
-(straight-use-package '(use-package :build t))
-(setq straight-use-package-by-default t)
-(setq use-package-always-ensure nil)
+(elpaca elpaca-use-package
+  ;; Enable :elpaca use-package keyword.
+  (elpaca-use-package-mode)
+  ;; Assume :elpaca t unless otherwise specified.
+  (setq elpaca-use-package-by-default t))
+;; Block until current queue processed.
+(elpaca-wait)
+
+
 
 (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
 
@@ -94,7 +125,6 @@
 (use-package which-key)
 
 ;; org
-(straight-use-package '(org :type built-in))
 (require 'org)
 
 (define-key global-map "\C-cl" 'org-store-link)
@@ -146,9 +176,15 @@
 
 (org-clock-persistence-insinuate)
 
+(use-package orderless
+  :defer t
+  :config
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package elegant-agenda-mode
-  :straight (elegant-agenda-mode :type git :host github :repo "justinbarclay/elegant-agenda-mode")
+  :elpaca (:host github :repo "justinbarclay/elegant-agenda-mode")
   :hook org-agenda-mode-hook)
 
 (setq org-id-link-to-org-use-id t)
@@ -394,6 +430,8 @@ command may be described by either:
   (exec-path-from-shell-copy-env "SSH_AGENT_PID")
   (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
 
+(use-package transient)
+
 ;; Magit
 (use-package magit
   :hook (after-save . magit-after-save-refresh-status))
@@ -427,7 +465,6 @@ command may be described by either:
 ;; Ripgrep
 (use-package ripgrep
   :if (executable-find "rg")
-  :straight (:build t)
   :defer t)
 
 (use-package deadgrep
@@ -595,9 +632,9 @@ command may be described by either:
 (use-package go-imports)
 
 (use-package go-dlv)
+(use-package dap-mode)
 
 (use-package dape
-  :straight t
   :config
   ;; Pulse source line (performance hit)
   (add-hook 'dape-display-source-hook 'pulse-momentary-highlight-one-line)
@@ -691,8 +728,8 @@ command may be described by either:
 
 ;; Sky color clock
 (use-package sky-color-clock
-  :straight
-  '(sky-color-clock :type git :host github :repo "zk-phi/sky-color-clock")
+  :elpaca
+  '(:host github :repo "zk-phi/sky-color-clock")
   :config
   (sky-color-clock-initialize 23)
   (setq sky-color-clock-format "%H:%M")
@@ -891,6 +928,14 @@ command may be described by either:
 
 (define-key org-agenda-mode-map (kbd "C-c n") 'org-agenda-note)
 
+;;; Agentic AI try out
+(use-package claude-code-ide
+  :elpaca (:host github :repo "manzaltu/claude-code-ide.el")
+  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+  :config
+  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
+
+(use-package notmuch)
 
 ;; From https://www.reddit.com/r/emacs/comments/a3rajh/chrome_bookmarks_sync_to_org/
 (defvar chrome-bookmarks-file
