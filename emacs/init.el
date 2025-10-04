@@ -32,7 +32,7 @@
 ;; Keep it clean
 (defun my-enable-trailing-whitespace ()
   (when (and (derived-mode-p 'prog-mode 'text-mode)
-	     (not buffer-read-only))
+             (not buffer-read-only))
     (setq show-trailing-whitespace t)))
 
 (add-hook 'prog-mode-hook 'my-enable-trailing-whitespace)
@@ -52,7 +52,7 @@
 
 (let ((battery-str (battery)))
   (unless (or (equal "Battery Qstatus not available" battery-str)
-	      (string-match-p (regexp-quote "N/A") battery-str))
+              (string-match-p (regexp-quote "N/A") battery-str))
     (display-battery-mode 1)))
 
 ;; Package definitions
@@ -62,9 +62,9 @@
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-			      :ref nil :depth 1 :inherit ignore
-			      :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-			      :build (:not elpaca--activate-package)))
+                              :ref nil :depth 1 :inherit ignore
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
 (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))
        (order (cdr elpaca-order))
@@ -74,20 +74,20 @@
     (make-directory repo t)
     (when (<= emacs-major-version 28) (require 'subr-x))
     (condition-case-unless-debug err
-	(if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-		  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-						  ,@(when-let* ((depth (plist-get order :depth)))
-						      (list (format "--depth=%d" depth) "--no-single-branch"))
-						  ,(plist-get order :repo) ,repo))))
-		  ((zerop (call-process "git" nil buffer t "checkout"
-					(or (plist-get order :ref) "--"))))
-		  (emacs (concat invocation-directory invocation-name))
-		  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-					"--eval" "(byte-recompile-directory \".\" 0 'force)")))
-		  ((require 'elpaca))
-		  ((elpaca-generate-autoloads "elpaca" repo)))
-	    (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-	  (error "%s" (with-current-buffer buffer (buffer-string))))
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
       ((error) (warn "%s" err) (delete-directory repo 'recursive))))
   (unless (require 'elpaca-autoloads nil t)
     (require 'elpaca)
@@ -115,9 +115,9 @@
   (require 'no-littering)
   (require 'recentf)
   (add-to-list 'recentf-exclude
-	       (recentf-expand-file-name no-littering-var-directory))
+               (recentf-expand-file-name no-littering-var-directory))
   (add-to-list 'recentf-exclude
-	       (recentf-expand-file-name no-littering-etc-directory)))
+               (recentf-expand-file-name no-littering-etc-directory)))
 
 ;; (use-package emojify
 ;;   :hook (after-init . global-emojify-mode))
@@ -137,42 +137,42 @@
 ;; This is the expanded view of my code (which is further below):
 (setq org-agenda-custom-commands
       `(("A" "Daily agenda and top priority tasks"
-	 ((tags-todo "*"
-		     ((org-agenda-skip-function '(org-agenda-skip-if nil '(timestamp)))
-		      (org-agenda-skip-function
-		       `(org-agenda-skip-entry-if
-			 'notregexp ,(format "\\[#%s\\]" (char-to-string org-priority-highest))))
-		      (org-agenda-block-separator nil)
-		      (org-agenda-overriding-header "Important tasks without a date\n")))
-	  (agenda "" ((org-agenda-span 1)
-		      (org-deadline-warning-days 0)
-		      (org-agenda-block-separator nil)
-		      (org-scheduled-past-days 0)
-		      ;; We don't need the `org-agenda-date-today'
-		      ;; highlight because that only has a practical
-		      ;; utility in multi-day views.
-		      (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-		      (org-agenda-format-date "%A %-e %B %Y")
-		      (org-agenda-overriding-header "\nToday's agenda\n")))
-	  (agenda "" ((org-agenda-start-on-weekday nil)
-		      (org-agenda-start-day "+1d")
-		      (org-agenda-span 3)
-		      (org-deadline-warning-days 0)
-		      (org-agenda-block-separator nil)
-		      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-		      (org-agenda-overriding-header "\nNext three days\n")))
-	  (agenda "" ((org-agenda-time-grid nil)
-		      (org-agenda-start-on-weekday nil)
-		      ;; We don't want to replicate the previous section's
-		      ;; three days, so we start counting from the day after.
-		      (org-agenda-start-day "+4d")
-		      (org-agenda-span 14)
-		      (org-agenda-show-all-dates nil)
-		      (org-deadline-warning-days 0)
-		      (org-agenda-block-separator nil)
-		      (org-agenda-entry-types '(:deadline))
-		      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-		      (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n")))))))
+         ((tags-todo "*"
+                     ((org-agenda-skip-function '(org-agenda-skip-if nil '(timestamp)))
+                      (org-agenda-skip-function
+                       `(org-agenda-skip-entry-if
+                         'notregexp ,(format "\\[#%s\\]" (char-to-string org-priority-highest))))
+                      (org-agenda-block-separator nil)
+                      (org-agenda-overriding-header "Important tasks without a date\n")))
+          (agenda "" ((org-agenda-span 1)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-scheduled-past-days 0)
+                      ;; We don't need the `org-agenda-date-today'
+                      ;; highlight because that only has a practical
+                      ;; utility in multi-day views.
+                      (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                      (org-agenda-format-date "%A %-e %B %Y")
+                      (org-agenda-overriding-header "\nToday's agenda\n")))
+          (agenda "" ((org-agenda-start-on-weekday nil)
+                      (org-agenda-start-day "+1d")
+                      (org-agenda-span 3)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nNext three days\n")))
+          (agenda "" ((org-agenda-time-grid nil)
+                      (org-agenda-start-on-weekday nil)
+                      ;; We don't want to replicate the previous section's
+                      ;; three days, so we start counting from the day after.
+                      (org-agenda-start-day "+4d")
+                      (org-agenda-span 14)
+                      (org-agenda-show-all-dates nil)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-entry-types '(:deadline))
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n")))))))
 
 (org-clock-persistence-insinuate)
 
@@ -180,8 +180,8 @@
   :defer t
   :config
   (setq completion-styles '(orderless basic)
-	completion-category-defaults nil
-	completion-category-overrides '((file (styles partial-completion)))))
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package elegant-agenda-mode
   :elpaca (:host github :repo "justinbarclay/elegant-agenda-mode")
@@ -257,28 +257,28 @@ command may be described by either:
 (defun compile-guess-command ()
 
   (let ((command-for-mode (cdr (assq major-mode
-				     compile-guess-command-table))))
+                                     compile-guess-command-table))))
     (if (and command-for-mode
-	     (stringp buffer-file-name))
-	(let* ((file-name (file-name-nondirectory buffer-file-name))
-	       (file-name-sans-suffix (if (and (string-match "\\.[^.]*\\'"
-							     file-name)
-					       (> (match-beginning 0) 0))
-					  (substring file-name
-						     0 (match-beginning 0))
-					nil)))
-	  (if file-name-sans-suffix
-	      (progn
-		(make-local-variable 'compile-command)
-		(setq compile-command
-		      (if (stringp command-for-mode)
-			  ;; Optimize the common case.
-			  (format command-for-mode
-				  file-name file-name-sans-suffix)
-			(funcall command-for-mode
-				 file-name file-name-sans-suffix)))
-		compile-command)
-	    nil))
+             (stringp buffer-file-name))
+        (let* ((file-name (file-name-nondirectory buffer-file-name))
+               (file-name-sans-suffix (if (and (string-match "\\.[^.]*\\'"
+                                                             file-name)
+                                               (> (match-beginning 0) 0))
+                                          (substring file-name
+                                                     0 (match-beginning 0))
+                                        nil)))
+          (if file-name-sans-suffix
+              (progn
+                (make-local-variable 'compile-command)
+                (setq compile-command
+                      (if (stringp command-for-mode)
+                          ;; Optimize the common case.
+                          (format command-for-mode
+                                  file-name file-name-sans-suffix)
+                        (funcall command-for-mode
+                                 file-name file-name-sans-suffix)))
+                compile-command)
+            nil))
       nil)))
 
 
@@ -308,10 +308,10 @@ command may be described by either:
 
 ;; Removes *Completions* from buffer after you've opened a file.
 (add-hook 'minibuffer-exit-hook
-	  '(lambda ()
-	     (let ((buffer "*Completions*"))
-	       (and (get-buffer buffer)
-		    (kill-buffer buffer)))))
+          '(lambda ()
+             (let ((buffer "*Completions*"))
+               (and (get-buffer buffer)
+                    (kill-buffer buffer)))))
 
 ;; No more typing the whole yes or no. Just y or n will do.
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -327,19 +327,19 @@ command may be described by either:
     (set-frame-parameter
      nil 'alpha
      (if (eql (cond ((numberp alpha) alpha)
-		    ((numberp (cdr alpha)) (cdr alpha))
-		    ;; Also handle undocumented (<active> <inactive>) form.
-		    ((numberp (cadr alpha)) (cadr alpha)))
-	      100)
-	 '(85 . 50) '(100 . 100)))))
+                    ((numberp (cdr alpha)) (cdr alpha))
+                    ;; Also handle undocumented (<active> <inactive>) form.
+                    ((numberp (cadr alpha)) (cadr alpha)))
+              100)
+         '(85 . 50) '(100 . 100)))))
 (global-set-key (kbd "C-c t") 'toggle-transparency)
 
 ;; Ask before killing `emacs --daemon`.
 (global-set-key (kbd "C-x C-c")
-		(function
-		 (lambda () (interactive)
-		   (cond ((y-or-n-p "Quit? ")
-			  (save-buffers-kill-terminal))))))
+                (function
+                 (lambda () (interactive)
+                   (cond ((y-or-n-p "Quit? ")
+                          (save-buffers-kill-terminal))))))
 
 ;; autocompletion
 (global-set-key (kbd "ESC ESC") 'dabbrev-expand)
@@ -366,10 +366,10 @@ command may be described by either:
   (add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
   ;; Web mode snippets
   (setq web-mode-extra-snippets
-	'("html" (("script" "<script src="""" type=""text/javascript""></script>")
-		  (("stylesheet" "<link rel=""stylesheet"" type=""text/css"" href="""">"))
-		  (("div" "<div class="""" id=""""></div>")))
-	  )))
+        '("html" (("script" "<script src="""" type=""text/javascript""></script>")
+                  (("stylesheet" "<link rel=""stylesheet"" type=""text/css"" href="""">"))
+                  (("div" "<div class="""" id=""""></div>")))
+          )))
 
 (setq c-default-style "gnu"
       c-basic-offset 2)
@@ -416,10 +416,10 @@ command may be described by either:
   (if (minibufferp)
       (minibuffer-complete)
     (if (or (not yas-minor-mode)
-	    (null (do-yas-expand)))
-	(if (check-expansion)
-	    (company-complete-common)
-	  (indent-for-tab-command)))))
+            (null (do-yas-expand)))
+        (if (check-expansion)
+            (company-complete-common)
+          (indent-for-tab-command)))))
 
 (global-set-key [backtab] 'tab-indent-or-complete)
 
@@ -449,7 +449,7 @@ command may be described by either:
 
 (setq frame-title-format
       (list '(buffer-file-name "%f" "%b")
-	    '(:eval (format " - GNU Emacs %s" emacs-version))))
+            '(:eval (format " - GNU Emacs %s" emacs-version))))
 
 ;; ;; elpy
 ;; (use-package elpy
@@ -459,8 +459,8 @@ command may be described by either:
   :config
   (setq lsp-pyright-langserver-command "basedpyright")
   :hook (python-mode . (lambda ()
-			 (require 'lsp-pyright)
-			 (lsp))))
+                         (require 'lsp-pyright)
+                         (lsp))))
 
 ;; Ripgrep
 (use-package ripgrep
@@ -480,9 +480,9 @@ command may be described by either:
 ;; consult
 (use-package consult
   :bind (("M-y" . consult-yank-pop)
-	 ("C-x b" . consult-buffer)
-	 ("C-x r b" . consult-bookmark)
-	 ("C-x p b" . consult-project-buffer)))
+         ("C-x b" . consult-buffer)
+         ("C-x r b" . consult-bookmark)
+         ("C-x p b" . consult-project-buffer)))
 
 ;; embark
 (use-package embark
@@ -525,28 +525,28 @@ command may be described by either:
 
 (use-package multiple-cursors
   :bind (("C-S-c C-S-c" . 'mc/edit-lines)
-	 ("C->" .'mc/mark-next-like-this)
-	 ("C-<" . 'mc/mark-previous-like-this)
-	 ("C-c C-<" . 'mc/mark-all-like-this)
-	 ("C-\"" . 'mc/skip-to-next-like-this)
-	 ("C-:" . 'mc/skip-to-previous-like-this)))
+         ("C->" .'mc/mark-next-like-this)
+         ("C-<" . 'mc/mark-previous-like-this)
+         ("C-c C-<" . 'mc/mark-all-like-this)
+         ("C-\"" . 'mc/skip-to-next-like-this)
+         ("C-:" . 'mc/skip-to-previous-like-this)))
 
 ;; ibuffer
 (setq ibuffer-saved-filter-groups
       '(("default"
-	 ("Magit" (mode . magit-mode))
-	 ("Processes" (or (mode . comint-mode)
-			  (mode . compilation-mode)))
-	 ("Org" (mode . org-mode))
-	 ("Go" (mode . go-mode))
-	 ("Python" (mode . python-mode))
-	 ("Rust" (mode . rust-mode))
-	 ("Dired" (mode . dired-mode))
-	 ("Emacs" (or (name . "^\\*scratch\\*$")
-		      (name . "^\\*Messages\\*$")))
-	 ("Help" (or (name . "^\\*Help\\*$")
-		     (name . "^\\*Apropos\\*$")
-		     (name . "^\\*info\\*$"))))))
+         ("Magit" (mode . magit-mode))
+         ("Processes" (or (mode . comint-mode)
+                          (mode . compilation-mode)))
+         ("Org" (mode . org-mode))
+         ("Go" (mode . go-mode))
+         ("Python" (mode . python-mode))
+         ("Rust" (mode . rust-mode))
+         ("Dired" (mode . dired-mode))
+         ("Emacs" (or (name . "^\\*scratch\\*$")
+                      (name . "^\\*Messages\\*$")))
+         ("Help" (or (name . "^\\*Help\\*$")
+                     (name . "^\\*Apropos\\*$")
+                     (name . "^\\*info\\*$"))))))
 
 ;; Rust
 (use-package rust-playground)
@@ -554,6 +554,13 @@ command may be described by either:
 (use-package rustic
   :config
   (add-hook 'rustic-mode-hook #'flycheck-mode))
+
+
+(dolist (hook '(rust-mode-hook rust-ts-mode-hook rustic-mode-hook))
+  (add-hook hook (lambda () (setq-local lsp-enable-on-type-formatting nil))))
+
+(dolist (hook '(rust-mode-hook rust-ts-mode-hook rustic-mode-hook))
+  (add-hook hook (lambda () (add-hook 'before-save-hook #'lsp-format-buffer nil t))))
 
 ;; Go
 (use-package go-playground)
@@ -563,8 +570,8 @@ command may be described by either:
 (use-package gherkin-mode)
 
 (add-hook 'ibuffer-mode-hook
-	  (lambda ()
-	    (ibuffer-switch-to-saved-filter-groups "default")))
+          (lambda ()
+            (ibuffer-switch-to-saved-filter-groups "default")))
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
 ;; rainbow-delimiters
@@ -577,9 +584,9 @@ command may be described by either:
   :after rainbow-delimiters
   :config
   (add-hook 'groovy-mode-hook
-	    'rainbow-delimiters-mode)
+            'rainbow-delimiters-mode)
   (add-hook 'groovy-mode-hook
-	    'aggressive-indent-mode))
+            'aggressive-indent-mode))
 
 ;; org auto save
 (add-hook 'auto-save-hook 'org-save-all-org-buffers)
@@ -602,15 +609,14 @@ command may be described by either:
 ;; install + lazy load
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
-  :hook ((prog-mode . lsp-deferred))
-  :config
-  ;; now it's safe:
-  (lsp-register-custom-settings
-   '(("rust-analyzer.cargo.buildScripts.enable" t t)
-     ("rust-analyzer.checkOnSave.command" "clippy")
-     ("gopls.completeUnimported" t t)
-     ("gopls.semanticTokens" t t)
-     ("gopls.staticcheck" t t))))
+  :hook ((prog-mode . lsp-deferred)))
+
+(setq lsp-headerline-breadcrumb-enable nil)
+(with-eval-after-load 'lsp-mode
+  (remove-hook 'lsp-mode-hook #'lsp-headerline-breadcrumb-mode))
+
+(with-eval-after-load 'lsp-mode
+  (define-key lsp-mode-map (kbd "C-c C-o") #'lsp-rust-analyzer-open-external-docs))
 
 (use-package lsp-ui
   :after lsp-mode)
@@ -629,11 +635,11 @@ command may be described by either:
 ;; GO IDE
 (add-hook 'go-mode-hook #'lsp-deferred)
 (add-hook 'go-mode-hook
-	  'rainbow-delimiters-mode)
+          'rainbow-delimiters-mode)
 (add-hook 'go-mode-hook
-	  'electric-pair-local-mode)
+          'electric-pair-local-mode)
 (add-hook 'terraform-mode-hook
-	  'electric-pair-local-mode)
+          'electric-pair-local-mode)
 
 (use-package go-imports)
 
@@ -656,7 +662,7 @@ command may be described by either:
   :config
   (add-hook 'yaml-mode-hook #'lsp-deferred)
   (add-hook 'yaml-mode-hook
-	    'highlight-indentation-mode))
+            'highlight-indentation-mode))
 
 ;; JAVA
 (use-package lsp-java
@@ -756,7 +762,7 @@ command may be described by either:
 
 (use-package swiper
   :bind (("C-s" . swiper)  ;; Replace isearch with swiper
-	 ("C-r" . swiper))) ;; Replace reverse isearch with swiper
+         ("C-r" . swiper))) ;; Replace reverse isearch with swiper
 
 (use-package git-link)
 (use-package dockerfile-mode)
@@ -769,11 +775,11 @@ command may be described by either:
   :after shr
   :config
   (add-to-list 'shr-external-rendering-functions
-	       '(pre . shr-tag-pre-highlight))
+               '(pre . shr-tag-pre-highlight))
   (when (version< emacs-version "26")
     (with-eval-after-load 'eww
       (advice-add 'eww-display-html :around
-		  'eww-display-html--override-shr-external-rendering-functions))))
+                  'eww-display-html--override-shr-external-rendering-functions))))
 
 (use-package transpose-frame)
 (use-package httpcode)
@@ -797,25 +803,25 @@ command may be described by either:
     (let ((total 0))
       (mapcar
        (lambda (file)
-	 (let ((clock-data (with-current-buffer (find-file-noselect file)
-			     (org-clock-get-table-data (buffer-name) params))))
-	   (when (> (nth 1 clock-data) 0)
-	     (setq total (+ total (nth 1 clock-data)))
-	     (insert (format "| | File *%s* | %.2f |\n"
-			     (file-name-nondirectory file)
-			     (/ (nth 1 clock-data) 60.0)))
-	     (dolist (entry (nth 2 clock-data))
-	       (insert (format "| | . %s%s | %s %.2f |\n"
-			       (org-clocktable-indent-string (nth 0 entry))
-			       (nth 1 entry)
-			       (clocktable-by-tag/shift-cell (nth 0 entry))
-			       (/ (nth 3 entry) 60.0)))))))
+         (let ((clock-data (with-current-buffer (find-file-noselect file)
+                             (org-clock-get-table-data (buffer-name) params))))
+           (when (> (nth 1 clock-data) 0)
+             (setq total (+ total (nth 1 clock-data)))
+             (insert (format "| | File *%s* | %.2f |\n"
+                             (file-name-nondirectory file)
+                             (/ (nth 1 clock-data) 60.0)))
+             (dolist (entry (nth 2 clock-data))
+               (insert (format "| | . %s%s | %s %.2f |\n"
+                               (org-clocktable-indent-string (nth 0 entry))
+                               (nth 1 entry)
+                               (clocktable-by-tag/shift-cell (nth 0 entry))
+                               (/ (nth 3 entry) 60.0)))))))
        (org-agenda-files))
       (save-excursion
-	(re-search-backward "*Tag time*")
-	(org-table-next-field)
-	(org-table-blank-field)
-	(insert (format "*%.2f*" (/ total 60.0)))))
+        (re-search-backward "*Tag time*")
+        (org-table-next-field)
+        (org-table-blank-field)
+        (insert (format "*%.2f*" (/ total 60.0)))))
     (org-table-align)))
 
 (defun org-dblock-write:clocktable-by-tag (params)
@@ -823,9 +829,9 @@ command may be described by either:
   (insert "|     |          | <r>  |\n")
   (let ((tags (plist-get params :tags)))
     (mapcar (lambda (tag)
-	      (setq params (plist-put params :tags tag))
-	      (clocktable-by-tag/insert-tag params))
-	    tags)))
+              (setq params (plist-put params :tags tag))
+              (clocktable-by-tag/insert-tag params))
+            tags)))
 
 (defun open-agenda-fullscreen ()
   "Open Org Agenda in another frame, make it fullscreen, and execute command 'A' if another monitor is detected."
@@ -847,7 +853,7 @@ command may be described by either:
 (add-hook 'compilation-finish-functions #'my-compilation-finish-function)
 (defun my-compilation-finish-function (buf why)
   (let* ((elapsed  (time-subtract nil my-compilation-start-time))
-	 (msg (format "Elapsed: %s" (format-time-string "%T.%N" elapsed t))))
+         (msg (format "Elapsed: %s" (format-time-string "%T.%N" elapsed t))))
     (save-excursion (goto-char (point-max)) (insert msg))
     (message "Compilation %s: %s" (string-trim-right why) msg)))
 
@@ -878,15 +884,15 @@ command may be described by either:
     (user-error "This command must be run from an Org agenda buffer"))
 
   (let* ((marker (or (org-get-at-bol 'org-hd-marker)
-		     (org-get-at-bol 'org-marker)))
-	 (task-buffer (marker-buffer marker))
-	 (task-pos (marker-position marker))
-	 (task-title (with-current-buffer task-buffer
-		       (goto-char task-pos)
-		       (org-get-heading t t)))
-	 (filename (concat (replace-regexp-in-string "[^a-zA-Z0-9_-]" "_" task-title) ".org"))
-	 (note-path (read-file-name "Path to create note: " (expand-file-name filename "~/Documents/notes/Banktech")))
-	 (note-link (format "[[file:%s][%s]]" note-path task-title)))
+                     (org-get-at-bol 'org-marker)))
+         (task-buffer (marker-buffer marker))
+         (task-pos (marker-position marker))
+         (task-title (with-current-buffer task-buffer
+                       (goto-char task-pos)
+                       (org-get-heading t t)))
+         (filename (concat (replace-regexp-in-string "[^a-zA-Z0-9_-]" "_" task-title) ".org"))
+         (note-path (read-file-name "Path to create note: " (expand-file-name filename "~/Documents/notes/Banktech")))
+         (note-link (format "[[file:%s][%s]]" note-path task-title)))
 
     (unless task-title
       (user-error "No task found at point"))
@@ -894,14 +900,14 @@ command may be described by either:
     ;; Create a new note file
     (with-current-buffer (find-file-noselect note-path)
       (insert "#+setupfile: ~/.emacs.d/org-templates/simple_inline/simple_inline.theme\n"
-	      "#+options: h:1 num:2 toc:nil broken-links:t html-postamble:nil ^:nil timestamp:nil\n"
-	      "#+TITLE: " task-title "\n"
-	      "#+DATE: " (format-time-string "[%Y-%m-%d %a]") "\n"
-	      "* Task: " task-title "\n"
-	      "** Context\n\n"
-	      "** Implementation\n\n"
-	      "** Testing\n\n"
-	      "** Caveats\n\n")
+              "#+options: h:1 num:2 toc:nil broken-links:t html-postamble:nil ^:nil timestamp:nil\n"
+              "#+TITLE: " task-title "\n"
+              "#+DATE: " (format-time-string "[%Y-%m-%d %a]") "\n"
+              "* Task: " task-title "\n"
+              "** Context\n\n"
+              "** Implementation\n\n"
+              "** Testing\n\n"
+              "** Caveats\n\n")
       (save-buffer))
 
     ;; Update the task title in Org Agenda to be a link
@@ -909,7 +915,7 @@ command may be described by either:
       (goto-char task-pos)
       (beginning-of-line)
       (when (re-search-forward (regexp-quote task-title) (line-end-position) t)
-	(replace-match note-link t t))
+        (replace-match note-link t t))
       (save-buffer))
 
     ;; Open the note
@@ -948,30 +954,30 @@ command may be described by either:
   (require 'json)
   (require 'org)
   (let ((data (let ((json-object-type 'alist)
-		    (json-array-type  'list)
-		    (json-key-type    'symbol)
-		    (json-false       nil)
-		    (json-null        nil))
-		(json-read-file chrome-bookmarks-file)))
-	level)
+                    (json-array-type  'list)
+                    (json-key-type    'symbol)
+                    (json-false       nil)
+                    (json-null        nil))
+                (json-read-file chrome-bookmarks-file)))
+        level)
     (cl-labels ((fn
-		  (al)
-		  (pcase (alist-get 'type al)
-		    ("folder"
-		     (insert
-		      (format "%s %s\n"
-			      (make-string level ?*)
-			      (alist-get 'name al)))
-		     (cl-incf level)
-		     (mapc #'fn (alist-get 'children al))
-		     (cl-decf level))
-		    ("url"
-		     (insert
-		      (format "%s LINK %s\n"
-			      (make-string level ?*)
-			      (org-make-link-string
-			       (alist-get 'url al)
-			       (alist-get 'name al))))))))
+                  (al)
+                  (pcase (alist-get 'type al)
+                    ("folder"
+                     (insert
+                      (format "%s %s\n"
+                              (make-string level ?*)
+                              (alist-get 'name al)))
+                     (cl-incf level)
+                     (mapc #'fn (alist-get 'children al))
+                     (cl-decf level))
+                    ("url"
+                     (insert
+                      (format "%s LINK %s\n"
+                              (make-string level ?*)
+                              (org-make-link-string
+                               (alist-get 'url al)
+                               (alist-get 'name al))))))))
       (setq level 1)
       (fn (alist-get 'bookmark_bar (alist-get 'roots data)))
       (setq level 1)
@@ -997,17 +1003,18 @@ command may be described by either:
 (use-package notmuch
   :config
   (setq notmuch-saved-searches
-	'((:name "Inbox"   :query "tag:inbox AND NOT tag:list" :key "i")
-	  (:name "Unread"  :query "tag:unread AND NOT tag:list" :key "u")
-	  (:name "Lists"   :query "tag:list" :key "l")
-	  (:name "Git ML"  :query "tag:git" :key "g")
-	  (:name "Flagged" :query "tag:flagged" :key "f")
-	  (:name "Finance" :query "tag:Bank/Finance" :key "b")
-	  (:name "Sent"    :query "tag:sent" :key "s")
-	  (:name "All Mail" :query "*" :key "a"))))
+        '((:name "Inbox"   :query "tag:inbox AND NOT tag:list" :key "i")
+          (:name "Unread"  :query "tag:unread AND NOT tag:list" :key "u")
+          (:name "Lists"   :query "tag:list" :key "l")
+          (:name "Git ML"  :query "tag:git" :key "g")
+          (:name "Flagged" :query "tag:flagged" :key "f")
+          (:name "Finance" :query "tag:Bank/Finance" :key "b")
+          (:name "Sent"    :query "tag:sent" :key "s")
+          (:name "All Mail" :query "*" :key "a"))))
 
 (use-package eat)
 (use-package hydra)
+(use-package load-env-vars)
 
 ;;;; LAST
 ;; (if (daemonp)

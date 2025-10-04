@@ -31,7 +31,7 @@
  '(cua-overwrite-cursor-color "#F0DFAF")
  '(cua-read-only-cursor-color "#7F9F7F")
  '(cursor-type 'box)
- '(custom-enabled-themes '(tango-dark))
+ '(custom-enabled-themes '(ef-autumn))
  '(custom-safe-themes
    '("296dcaeb2582e7f759e813407ff1facfd979faa071cf27ef54100202c45ae7d4"
      "f6a48c82c4cf8173abaed9012d91496c306b648b26363f0d77209fdbc5216860"
@@ -232,6 +232,7 @@
  '(logview-max-promising-lines 2)
  '(lsp-auto-select-workspace t)
  '(lsp-enable-file-watchers nil)
+ '(lsp-enable-on-type-formatting t)
  '(lsp-http-proxyStrictSSL t)
  '(lsp-idle-delay 1)
  '(lsp-java-configuration-maven-user-settings "~/.m2/settings.xml")
@@ -239,7 +240,7 @@
  '(lsp-keep-workspace-alive nil)
  '(lsp-log-io nil)
  '(lsp-response-timeout 40)
- '(lsp-semantic-tokens-enable t)
+ '(lsp-semantic-tokens-enable nil)
  '(lsp-semgrep-languages nil)
  '(lsp-server-trace "messages")
  '(lsp-terraform-ls-enable-show-reference t)
